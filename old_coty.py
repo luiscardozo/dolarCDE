@@ -10,7 +10,7 @@ from datetime import datetime
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-
+## Format
 def decimal_default(obj):
     if isinstance(obj, Decimal):
         return float(obj)
@@ -20,6 +20,8 @@ def decimal_default(obj):
 def format_decimal(number):
     return str(number).replace(".", "").replace(",", ".")
 
+
+### extraccion de bancos y financieras
 
 def vision():
     soup = None
@@ -283,6 +285,7 @@ def mundial():
 
     return Decimal(compra), Decimal(venta)
 
+############ creacion del JSON final (no modular)
 
 def create_json():
     mcompra, mventa = maxi()
@@ -336,17 +339,65 @@ def create_json():
         default=decimal_default,
     )
 
-
+### leer JSON
 def get_output():
     with open("dolar.json", "r") as f:
         response = f.read()
     return response
 
-
+### escribir JSON (llama a todo lo demás del archivo)
 def write_output():
     response = create_json()
     with open("dolar.json", "w") as f:
         f.write(response)
 
+def json_format():
+    #variables para usar de demo abajo
+    compra = 0
+    venta = 0
+    timestamp = 0
+
+    json_old = {
+        "dolarpy": {
+                "cambiosalberdi": {"compra": compra, "venta": venta},
+                "cambioschaco": {"compra": compra, "venta": venta},
+                "maxicambios": {"compra": compra, "venta": venta},
+                "bcp": {
+                    "compra": compra,
+                    "venta": venta,
+                    "referencial_diario": venta, #bcpref,
+                },
+                "updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                #...
+            }
+    }
+
+    json_new = {
+        "dolarcde": {
+            "cambioschaco": {
+                "km4": {"compra": compra, "venta": venta, "timestamp": timestamp},
+                "shopping-jardin": {"compra": compra, "venta": venta, "timestamp": timestamp},
+                "shopping-del-este": {"compra": compra, "venta": venta, "timestamp": timestamp},
+                "resumen": {"maxcompra": "km4", "minventa": "shopping-jardin"},
+            },
+            "bonanza": {
+                "matriz": {"compra": compra, "venta": venta, "timestamp": timestamp},
+                "saba": {"compra": compra, "venta": venta, "timestamp": timestamp},
+                "resumen": {"maxcompra": "matriz", "minventa": "matriz"},
+            },
+            "resumen": {
+                "maxcompra": "cambioschaco-km4", "minventa": "bonanza-saba",
+            }
+        }
+    }
+
+    ubicaciones_json = {    #cada proveedor debe proveer una lista de nombres de sucursales y sus ubicaciones
+        "cambioschaco": {
+            "sucursales": [ 
+                { "id1": "km4", "direccion": "Avda. Tal Cosa", "ubicacion": "Lat-Long" },
+                { "id2": "shopping-jardin", "direccion": "Avda. Tal Cosa", "ubicacion": "Lat-Long"},
+            ]
+        }
+    }
 
 write_output()
