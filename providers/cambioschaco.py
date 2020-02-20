@@ -1,22 +1,24 @@
-import string
-import sys, os
 import json
+import requests
+import urllib3
+
 #sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-PACKAGE_PARENT = '..'
-SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
-sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+# PACKAGE_PARENT = '..'
+# SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+# sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
-from lib.casadecambio import CasaDeCambio
-from lib.origintype import OriginType
+from providers.base.casadecambio import CasaDeCambio
+from providers.base.origintype import OriginType
+from lib.cotizacion import Cotizacion
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class CambiosChaco(CasaDeCambio):
 
-    idn = "cambioschaco"
+    ident = "cambioschaco"
     name = "Cambios Chaco"
     originType = OriginType.JSON
-    urlTemplate = string.Template("https://www.cambioschaco.com.py/api/branch_office/${branch}/exchange")
-    # luego: template_text.safe_substitute(branch=branchID))
     header = ""
     data = ""
 
@@ -32,17 +34,49 @@ class CambiosChaco(CasaDeCambio):
 
     def getSucursales(self):
         return {
-            self.idn : { "sucursales": self.sucursales }
+            self.ident : { "sucursales": self.sucursales }
         }
+
+    def getURL(self, idSuc):
+        return f"https://www.cambioschaco.com.py/api/branch_office/{idSuc}/exchange"
+
+    def getCotizacionSucursal(self, url):
+        compraVenta = Cotizacion(0,0)
+        try:
+            soup = json.loads(
+                requests.get(url,timeout=10,verify=False).text
+            )
+            compra = soup["items"][0]["purchasePrice"]
+            venta = soup["items"][0]["salePrice"]
+            compraVenta = Cotizacion(compra, venta)
+        except requests.ConnectionError as e:
+            print("Connection error: ")
+            print(e)
+        except:
+            print("Another error")
+
+        return compraVenta
         
     def getCotizaciones(self):
-        pass
+        cotizaciones = {}
+
+        for suc in self.sucursales:
+            url = self.getURL(suc['idSuc'])
+
+            cambioEnSucursal = self.getCotizacionSucursal(url)
+            #print(f"{suc['id']}: {cambioEnSucursal}")
+            cotizaciones[suc['id']] = {'compra': cambioEnSucursal.compra, 'venta': cambioEnSucursal.venta, 'timestamp': cambioEnSucursal.timestamp.strftime("%Y-%m-%d %H:%M:%S")}
+        
+        return { self.ident : cotizaciones }
 
 
-if __name__ == '__main__':
-    cc = CambiosChaco()
-    suc = cc.getSucursales()
-    print(type(suc))
-    print(suc)
-    print("\n")
-    print(json.dumps(suc, indent=4))
+    def test(self):
+        cc = CambiosChaco()
+        #sucursales
+        suc = cc.getSucursales()
+        #print(json.dumps(suc, indent=4))
+
+        #cotizaciones
+        coti = cc.getCotizaciones()
+        #print(coti)
+        print(json.dumps(coti, indent=4))
