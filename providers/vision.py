@@ -50,7 +50,7 @@ class Vision(CasaDeCambio):
         return cambio    
     
     def getCotizaciones(self):
-        return {self.sucursales[0]['id'] : self.getCotizacionVisionWeb().getValuesDict()}
+        return { self.__id : {self.sucursales[0]['id'] : self.getCotizacionVisionWeb().getValuesDict()} }
 
 
     def test(self):
