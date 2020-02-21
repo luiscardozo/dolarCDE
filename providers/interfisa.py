@@ -9,11 +9,11 @@ from base.cotizacion import Cotizacion
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-class Vision(CasaDeCambio):
+class Interfisa(CasaDeCambio):
 
-    __id = "vision"
-    name = "Vision Banco"
-    originType = OriginType.HTML
+    __id = "interfisa"
+    name = "Interfisa Banco"
+    originType = OriginType.JSON
     #header = ""
     #data = ""
 
@@ -27,17 +27,22 @@ class Vision(CasaDeCambio):
         }
 
     def getCotizacionWeb(self):
-        cambio = Cotizacion(0, 0)
+        compra = 0
+        venta = 0
+        cambio = Cotizacion(compra, venta)
 
         try:
-            soup = BeautifulSoup(
-                requests.get('https://www.visionbanco.com', timeout=10,
-                            headers={'user-agent': 'Mozilla/5.0'}, verify=False).text, "html.parser")
+            jsonResult = requests.get(
+                "https://seguro.interfisa.com.py/rest/cotizaciones", timeout=10
+            ).json()
+            cotizaciones = jsonResult["operacionResponse"]["cotizaciones"]["monedaCot"]
+            for coti in cotizaciones:
+                for k, v in coti.items():
+                    if v == "DOLARES AMERICANOS":  # estamos en el dict de Dolares
+                        compra = coti["compra"]
+                        venta = coti["venta"]
 
-            efectivo = soup.select('#efectivo')[0]
-            compra = efectivo.select('table > tr > td:nth-of-type(2) > p:nth-of-type(1)')[0].get_text().replace('.', '')
-            venta = efectivo.select('table > tr > td:nth-of-type(3) > p:nth-of-type(1)')[0].get_text().replace('.', '')
-            cambio = Cotizacion(int(compra), int(venta))
+            cambio = Cotizacion(compra, venta)
 
         except requests.ConnectionError as e:
             #ToDo: hacer logging
@@ -47,19 +52,19 @@ class Vision(CasaDeCambio):
             #ToDo: ser más específico
             print("Another error")
 
-        return cambio    
+        return cambio
     
     def getCotizaciones(self):
         return { self.__id : {self.sucursales[0]['id'] : self.getCotizacionWeb().getValuesDict()} }
 
 
     def test(self):
-        cc = Vision()
+        ib = Interfisa()
         #sucursales
-        suc = cc.getSucursales()
+        suc = ib.getSucursales()
         print(json.dumps(suc, indent=4))
 
         #cotizaciones
-        coti = cc.getCotizaciones()
+        coti = ib.getCotizaciones()
         #print(coti)
         print(json.dumps(coti, indent=4))
