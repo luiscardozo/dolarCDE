@@ -8,7 +8,7 @@ from base.cotizacion import Cotizacion
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-class CambiosChaco(CasaDeCambio):
+class Cambioschaco(CasaDeCambio):   #Se cambia el nombre a Cambioschaco debido a error de import
 
     __id = "cambioschaco"
     name = "Cambios Chaco"
@@ -27,6 +27,7 @@ class CambiosChaco(CasaDeCambio):
         ]
 
     def getSucursales(self):
+        """Devuelve un dict con todas las sucursales que tienen cotizaciones listadas en la web"""
         return {
             self.__id : { "sucursales": self.sucursales }
         }
@@ -55,6 +56,7 @@ class CambiosChaco(CasaDeCambio):
     
     
     def getCotizaciones(self):
+        """Devuelve un dict con todas las cotizaciones de la entidad, por sucursal"""
         cotizaciones_dict = {}
 
         for suc in self.sucursales:

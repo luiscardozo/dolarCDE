@@ -22,6 +22,7 @@ class Vision(CasaDeCambio):
         ]
 
     def getSucursales(self):
+        """Devuelve un dict con todas las sucursales que tienen cotizaciones listadas en la web"""
         return {
             self.__id : { "sucursales": self.sucursales }
         }
@@ -50,6 +51,7 @@ class Vision(CasaDeCambio):
         return cambio    
     
     def getCotizaciones(self):
+        """Devuelve un dict con todas las cotizaciones de la entidad, por sucursal"""
         return { self.__id : {self.sucursales[0]['id'] : self.getCotizacionWeb().getValuesDict()} }
 
 
