@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from providers.cambioschaco import CambiosChaco
+from providers.cambioschaco import Cambioschaco
 from providers.vision import Vision
 from providers.interfisa import Interfisa
 
@@ -8,7 +8,7 @@ from providers.interfisa import Interfisa
 def mergeAllQuotes():
     cambios = {}
 
-    cc = CambiosChaco()
+    cc = Cambioschaco()
     ccc = cc.getCotizaciones()
     cambios.update(ccc)
 

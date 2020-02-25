@@ -3,8 +3,8 @@ import requests
 import urllib3
 from bs4 import BeautifulSoup
 
-from providers.base.casadecambio import CasaDeCambio
-from providers.base.origintype import OriginType
+from base.casadecambio import CasaDeCambio
+from base.origintype import OriginType
 from base.cotizacion import Cotizacion
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

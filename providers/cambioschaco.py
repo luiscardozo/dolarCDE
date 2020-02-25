@@ -2,8 +2,8 @@ import json
 import requests
 import urllib3
 
-from providers.base.casadecambio import CasaDeCambio
-from providers.base.origintype import OriginType
+from base.casadecambio import CasaDeCambio
+from base.origintype import OriginType
 from base.cotizacion import Cotizacion
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -70,7 +70,7 @@ class Cambioschaco(CasaDeCambio):   #Se cambia el nombre a Cambioschaco debido a
 
 
     def test(self):
-        cc = CambiosChaco()
+        cc = Cambioschaco()
         #sucursales
         suc = cc.getSucursales()
         print(json.dumps(suc, indent=4))

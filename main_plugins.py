@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from providers.base.casadecambio import CasaDeCambio
+from base.casadecambio import CasaDeCambio
 
 import importlib
 import pkgutil
@@ -30,10 +30,6 @@ def mergeAllQuotes():
     plugins = discoverPlugins()
 
     for key, _module in plugins.items():
-        
-        if(key == 'providers.base'):
-            continue
-
         casaDeCambioClass = getattr(_module, key.split('.')[1].title() )
         
         casaDeCambioInstance = casaDeCambioClass()
