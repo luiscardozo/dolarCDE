@@ -3,6 +3,7 @@ from datetime import datetime
 from providers.cambioschaco import Cambioschaco
 from providers.vision import Vision
 from providers.interfisa import Interfisa
+from providers.alberdi import Alberdi
 
 
 def mergeAllQuotes():
@@ -19,6 +20,10 @@ def mergeAllQuotes():
     ib = Interfisa()
     ibc = ib.getCotizaciones()
     cambios.update(ibc)
+
+    alb = Alberdi()
+    albc = alb.getCotizaciones()
+    cambios.update(albc)
 
     return cambios
     
