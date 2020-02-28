@@ -23,41 +23,6 @@ def format_decimal(number):
 
 ### extraccion de bancos y financieras
 
-def vision():
-    soup = None
-    try:
-        soup = BeautifulSoup(
-            requests.get('https://www.visionbanco.com', timeout=10,
-                         headers={'user-agent': 'Mozilla/5.0'}, verify=False).text, "html.parser")
-
-        efectivo = soup.select('#efectivo')[0]
-        compra = efectivo.select('table > tr > td:nth-of-type(2) > p:nth-of-type(1)')[0].get_text().replace('.', '')
-        venta = efectivo.select('table > tr > td:nth-of-type(3) > p:nth-of-type(1)')[0].get_text().replace('.', '')
-    except requests.ConnectionError:
-        compra, venta = 0, 0
-    except:
-        compra, venta = 0, 0
-
-    return Decimal(compra), Decimal(venta)
-
-
-def chaco():
-    try:
-        soup = json.loads(
-            requests.get(
-                "http://www.cambioschaco.com.py/api/branch_office/1/exchange",
-                timeout=10,
-            ).text
-        )
-        compra = soup["items"][0]["purchasePrice"]
-        venta = soup["items"][0]["salePrice"]
-    except requests.ConnectionError:
-        compra, venta = 0, 0
-    except:
-        compra, venta = 0, 0
-
-    return Decimal(compra), Decimal(venta)
-
 
 def maxi():
     today = datetime.today().strftime("%d%m%Y")
@@ -78,20 +43,6 @@ def maxi():
         compra = tr_dolar.find_all('td')[1].text
         venta  = tr_dolar.find_all('td')[2].text
 
-    except requests.ConnectionError:
-        compra, venta = 0, 0
-    except:
-        compra, venta = 0, 0
-
-    return Decimal(compra), Decimal(venta)
-
-
-def alberdi():
-    try:
-        url = "http://cambiosalberdi.com/ws/getCotizaciones.json"
-        soup = requests.get(url, timeout=10).json()
-        compra = soup["asuncion"][0]["compra"].replace(".", "")
-        venta = soup["asuncion"][0]["venta"].replace(".", "")
     except requests.ConnectionError:
         compra, venta = 0, 0
     except:
@@ -153,25 +104,6 @@ def setgov():
         venta = (
             soup.select("td.UICotizacion")[1].text.replace("G. ", "").replace(".", "")
         )
-    except requests.ConnectionError:
-        compra, venta = 0, 0
-    except:
-        compra, venta = 0, 0
-
-    return Decimal(compra), Decimal(venta)
-
-
-def interfisa():
-    try:
-        jsonResult = requests.get(
-            "https://seguro.interfisa.com.py/rest/cotizaciones", timeout=10
-        ).json()
-        cotizaciones = jsonResult["operacionResponse"]["cotizaciones"]["monedaCot"]
-        for coti in cotizaciones:
-            for k, v in coti.items():
-                if v == "DOLARES AMERICANOS":  # estamos en el dict de Dolares
-                    compra = coti["compra"]
-                    venta = coti["venta"]
     except requests.ConnectionError:
         compra, venta = 0, 0
     except:
@@ -289,23 +221,17 @@ def mundial():
 
 def create_json():
     mcompra, mventa = maxi()
-    ccompra, cventa = chaco()
-    acompra, aventa = alberdi()
     bcpcompra, bcpventa, bcpref = bcp()
     setcompra, setventa = setgov()
-    intcompra, intventa = interfisa()
     ambcompra, ambventa = amambay()
     eccompra, ecventa = eurocambio()
     mydcompra, mydventa = myd()
     bbvacompra, bbvaventa = bbva()
     # famicompra, famiventa = familiar()
     wcompra, wventa = mundial()
-    visioncompra, visionventa = vision()
 
     respjson = {
         "dolarpy": {
-            "cambiosalberdi": {"compra": acompra, "venta": aventa},
-            "cambioschaco": {"compra": ccompra, "venta": cventa},
             "maxicambios": {"compra": mcompra, "venta": mventa},
             "bcp": {
                 "compra": bcpcompra,
@@ -313,7 +239,6 @@ def create_json():
                 "referencial_diario": bcpref,
             },
             "set": {"compra": setcompra, "venta": setventa},
-            "interfisa": {"compra": intcompra, "venta": intventa},
             "amambay": {"compra": ambcompra, "venta": ambventa},
             "mydcambios": {"compra": mydcompra, "venta": mydventa},
             "eurocambios": {"compra": eccompra, "venta": ecventa},
@@ -323,10 +248,6 @@ def create_json():
             # }
             "bbva": {"compra": bbvacompra, "venta": bbvaventa},
             "mundialcambios": {"compra": wcompra, "venta": wventa},
-            'vision': {
-                'compra': visioncompra,
-                'venta': visionventa,
-            }
         },
         "updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }
